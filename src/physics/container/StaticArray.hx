@@ -1,4 +1,4 @@
-package shiro.physics.container;
+package physics.container;
 
 @:generic class StaticArrayIterator<T> {
 	public var i(default, null) : Int;

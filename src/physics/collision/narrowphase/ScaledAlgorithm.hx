@@ -1,4 +1,4 @@
-package shiro.physics.collision.narrowphase;
+package physics.collision.narrowphase;
 
 class ScaledAlgorithm {
 

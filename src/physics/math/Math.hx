@@ -1,4 +1,4 @@
-package shiro.physics.math;
+package physics.math;
 
 typedef Scalar = #if physics_double_precision Float #else Single #end;
 

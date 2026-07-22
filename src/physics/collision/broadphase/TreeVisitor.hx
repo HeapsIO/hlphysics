@@ -1,4 +1,4 @@
-package shiro.physics.collision.broadphase;
+package physics.collision.broadphase;
 
 abstract class TreeVisitor {
 	public var stack : hl.NativeArray<Int>;

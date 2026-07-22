@@ -1,4 +1,4 @@
-package shiro.physics.container;
+package physics.container;
 
 typedef ID = Int;
 

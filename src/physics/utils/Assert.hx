@@ -1,4 +1,4 @@
-package shiro.physics.utils;
+package physics.utils;
 
 class Assert {
 	public static inline function t( condition : Bool, ?pos : haxe.PosInfos ) : Void {

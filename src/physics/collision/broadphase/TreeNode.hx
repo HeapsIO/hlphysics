@@ -1,4 +1,4 @@
-package shiro.physics.collision.broadphase;
+package physics.collision.broadphase;
 
 @:struct class TreeNode {
 	public static inline final NULL_TREE_NODE : Int = -1;

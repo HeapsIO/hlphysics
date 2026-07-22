@@ -1,4 +1,4 @@
-package shiro.physics.collision.narrowphase;
+package physics.collision.narrowphase;
 
 typedef CollideFun = ( shape1 : Shape, shape2 : Shape, scale1 : Vec3, scale2 : Vec3, transform1 : Mat, transform2 : Mat, collector : CollideCollector ) -> Bool;
 typedef ShapecastFun = ( shapeCast : ShapeCast, shape2 : Shape, scale2 : Vec3, transform2 : Mat, collector : ShapeCastCollector ) -> Bool;

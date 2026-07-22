@@ -1,4 +1,4 @@
-package shiro.physics.collision.narrowphase;
+package physics.collision.narrowphase;
 
 class MeshCollideVisitor extends TreeVisitor {
 	var convex : ConvexShape;

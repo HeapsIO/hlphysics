@@ -1,4 +1,4 @@
-package shiro.physics.collision.shapes;
+package physics.collision.shapes;
 
 class SubShape {
 	public var shape : Shape;

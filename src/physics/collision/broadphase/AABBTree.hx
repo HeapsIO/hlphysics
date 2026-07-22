@@ -1,4 +1,4 @@
-package shiro.physics.collision.broadphase;
+package physics.collision.broadphase;
 
 #if heaps
 private class DebugVisitor extends TreeVisitor {

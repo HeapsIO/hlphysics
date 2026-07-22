@@ -1,4 +1,4 @@
-package shiro.physics.container;
+package physics.container;
 
 @:generic class Pool<T> {
 	var clnew : Void -> T;

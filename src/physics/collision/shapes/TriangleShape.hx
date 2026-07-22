@@ -1,4 +1,4 @@
-package shiro.physics.collision.shapes;
+package physics.collision.shapes;
 
 class TriangleSupport extends ConvexSupport {
 	@:packed public var v0 : Vec3;

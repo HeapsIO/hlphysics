@@ -1,4 +1,4 @@
-package shiro.physics.collision;
+package physics.collision;
 
 @:struct
 class ShapeCastResult {

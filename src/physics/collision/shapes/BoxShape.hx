@@ -1,4 +1,4 @@
-package shiro.physics.collision.shapes;
+package physics.collision.shapes;
 
 class BoxSupport extends ConvexSupport {
 	@:packed public var halfExtent : Vec3;

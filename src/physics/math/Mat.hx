@@ -1,4 +1,4 @@
-package shiro.physics.math;
+package physics.math;
 
 @:struct
 class MatImpl {

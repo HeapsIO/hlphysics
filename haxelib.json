@@ -1,0 +1,11 @@
+{
+	"name" : "hlphysics",
+	"url" : "https://github.com/HeapsIO/hlphysics",
+	"license" : "BSD",
+	"description" : "Physics for Hashlink",
+	"version" : "0.1.0",
+	"releasenote" : "",
+	"classPath": "src/",
+	"contributors" : ["ncannasse"],
+	"dependencies": {}
+}

@@ -1,4 +1,4 @@
-package shiro.physics.math;
+package physics.math;
 
 class ScaleHelper {
 	public static inline var SCALE_MIN : Scalar = 1.0e-6;

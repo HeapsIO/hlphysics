@@ -1,4 +1,4 @@
-package shiro.physics.collision.shapes;
+package physics.collision.shapes;
 
 enum abstract ShapeType(Int) from Int to Int {
 	var Sphere = 0;

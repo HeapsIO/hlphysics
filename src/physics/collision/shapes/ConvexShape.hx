@@ -1,4 +1,4 @@
-package shiro.physics.collision.shapes;
+package physics.collision.shapes;
 
 /**
 	Note : new() should do nothing, because instances are created using `Type.createEmptyInstance`.

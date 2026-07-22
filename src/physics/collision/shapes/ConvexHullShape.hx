@@ -1,4 +1,4 @@
-package shiro.physics.collision.shapes;
+package physics.collision.shapes;
 
 class ConvexHullSupport extends ConvexSupport {
 	public var convex : ConvexHullShape;
