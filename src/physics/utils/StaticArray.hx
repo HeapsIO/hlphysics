@@ -1,4 +1,4 @@
-package physics.container;
+package physics.utils;
 
 @:generic class StaticArrayIterator<T> {
 	public var i(default, null) : Int;
