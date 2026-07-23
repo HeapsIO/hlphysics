@@ -1,0 +1,9 @@
+{
+	"haxe.codeGeneration": {
+		"imports": {
+			"enableAutoImports": false
+		}
+	},
+	"files.trimTrailingWhitespace": true,
+	"editor.insertSpaces": false,
+}

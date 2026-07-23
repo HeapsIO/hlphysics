@@ -1,0 +1,4 @@
+common.hxml
+-D hlgen.makefile=vs2026
+-D hlgen.makefilepath=hlc
+-hl hlc/src/physicsSample.c

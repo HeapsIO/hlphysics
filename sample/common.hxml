@@ -1,0 +1,12 @@
+-main PhysicsSample
+-lib hlphysics
+-lib heaps
+-D hl-profile
+-lib hldx
+-D dx12
+-lib hashlink
+-D hl-ver=1.16.0
+-D dce=full
+# -D physics_debug
+# -D physics_double_precision
+# -D dump=pretty

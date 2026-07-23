@@ -1,0 +1,6 @@
+dump/
+hlc/
+*.hl
+.tmp/
+*.dump
+*.json
