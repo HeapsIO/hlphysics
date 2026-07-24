@@ -5,12 +5,12 @@ private class DebugVisitor extends TreeVisitor {
 	public var root : h3d.scene.Object;
 	var rand : hxd.Rand;
 
-	inline public function new() {
+	public inline function new() {
 		root = new h3d.scene.Object();
 		rand = new hxd.Rand(0);
 	}
 
-	inline public function init() {
+	public inline function init() {
 		root.removeChildren();
 	}
 
@@ -25,12 +25,12 @@ private class DebugVisitor extends TreeVisitor {
 		return bounds;
 	}
 
-	inline public function visitNode( node : TreeNode ) {
+	public inline function visitNode( node : TreeNode ) {
 		visitBody(node);
 		return true;
 	}
 
-	inline public function visitBody( body : TreeNode ) {
+	public inline function visitBody( body : TreeNode ) {
 		rand.init(body.height);
 		var color = new h3d.Vector(rand.rand(),rand.rand(),rand.rand());
 		root.addChild(new h3d.scene.Box(color.toColor(), toBounds(body.aabb), true));

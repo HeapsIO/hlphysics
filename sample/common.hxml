@@ -8,5 +8,6 @@
 -D hl-ver=1.16.0
 -D dce=full
 # -D physics_debug
+# -D physics_profile
 # -D physics_double_precision
 # -D dump=pretty

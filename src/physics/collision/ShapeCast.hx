@@ -24,7 +24,7 @@ class ShapeCast {
 		return transform;
 	}
 
-	inline public function setDirection( lx : Scalar, ly : Scalar, lz : Scalar ) {
+	public inline function setDirection( lx : Scalar, ly : Scalar, lz : Scalar ) {
 		direction.x = lx;
 		direction.y = ly;
 		direction.z = lz;

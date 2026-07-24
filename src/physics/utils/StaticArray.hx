@@ -65,11 +65,11 @@ package physics.utils;
 		return container[_length.sub(1) - 1];
 	}
 
-	inline public function empty() {
+	public inline function empty() {
 		_length.store(0);
 	}
 
-	inline public function isFull() {
+	public inline function isFull() {
 		return _length.load() == capacity;
 	}
 

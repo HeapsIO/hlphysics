@@ -16,7 +16,7 @@ class Body {
 	@:packed public var scale(default, set) : Vec3;
 
 	public var nodeID : Int;
-	public var motionType : MotionType;
+	public var motionType(default, null) : MotionType;
 	public var collisionGroup : Int;
 	public var collisionMask : Int;
 	public var shape : Shape;

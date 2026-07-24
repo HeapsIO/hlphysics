@@ -19,7 +19,7 @@ class Ray {
 		direction.load(r.direction);
 	}
 
-	inline public function setOrigin( x : Scalar, y : Scalar, z : Scalar ) {
+	public inline function setOrigin( x : Scalar, y : Scalar, z : Scalar ) {
 		origin.x = x;
 		origin.y = y;
 		origin.z = z;
@@ -30,7 +30,7 @@ class Ray {
 		return origin;
 	}
 
-	inline public function setDirection( lx : Scalar, ly : Scalar, lz : Scalar ) {
+	public inline function setDirection( lx : Scalar, ly : Scalar, lz : Scalar ) {
 		direction.x = lx;
 		direction.y = ly;
 		direction.z = lz;
@@ -43,6 +43,10 @@ class Ray {
 
 	public inline function getPoint( fraction : Scalar ) : Vec3 {
 		return origin + direction * fraction;
+	}
+
+	public function toString() {
+		return '{origin:$origin,direction:$direction}';
 	}
 
 	#if heaps
