@@ -333,7 +333,12 @@ class Model extends Rigidbody {
 	}
 
 	public function makeShape() {
-		return Shape.fromHeaps(mesh.getCollider());
+		var col = Shape.fromHeaps(mesh.getCollider());
+		var mat = mesh.defaultTransform;
+		if( mat != null && !mat.isIdentity() ) {
+			col = Shape.transformed(col, Vec3.fromHeaps(mat.getPosition()), Vec3.fromHeaps(mat.getEulerAngles()), Vec3.fromHeaps(mat.getScale()));
+		}
+		return col;
 	}
 
 	public function makeObject( ?material:h3d.mat.Material, ?parent:h3d.scene.Object ) : h3d.scene.Object {

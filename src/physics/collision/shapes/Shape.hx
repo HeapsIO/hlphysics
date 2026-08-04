@@ -74,12 +74,7 @@ abstract class Shape {
 			return new EmptyShape();
 		var obj = Std.downcast(col, h3d.col.ObjectCollider);
 		if( obj != null ) {
-			var col = Shape.fromHeaps(obj.collider);
-			var mat = obj.obj.defaultTransform;
-			if( mat != null && !mat.isIdentity() ) {
-				col = Shape.transformed(col, Vec3.fromHeaps(mat.getPosition()), Vec3.fromHeaps(mat.getEulerAngles()), Vec3.fromHeaps(mat.getScale()));
-			}
-			return col;
+			return Shape.fromHeaps(obj.collider);
 		}
 		var opt = Std.downcast(col, h3d.col.Collider.OptimizedCollider);
 		if( opt != null ) {
