@@ -98,5 +98,14 @@ class BoxShape extends ConvexPolyhedronShape {
 		rotation.set(rot.x, rot.y, rot.z);
 		return shape;
 	}
+
+	public static function fromHeapsBounds( bounds : h3d.col.Bounds, position : Vec3, rotation : Vec3 ) : BoxShape {
+		var halfExtent = bounds.getSize() * (1/2);
+		var pos = bounds.getCenter();
+		var shape = new BoxShape(Vec3.fromHeaps(halfExtent));
+		position.set(pos.x, pos.y, pos.z);
+		rotation.set(0.0, 0.0, 0.0);
+		return shape;
+	}
 	#end
 }

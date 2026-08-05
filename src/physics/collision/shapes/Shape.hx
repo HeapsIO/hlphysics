@@ -69,21 +69,30 @@ abstract class Shape {
 	}
 
 	#if heaps
-	public static function fromHeaps( col : h3d.col.Collider ) : Shape {
+	/**
+		Convert heaps collider to Shape.
+		If `follows` is given, records `ObjectCollider` obj into it - only a single object is supported.
+	**/
+	public static function fromHeaps( col : h3d.col.Collider, ?follows : Array<h3d.scene.Object> ) : Shape {
 		if( col == null )
 			return new EmptyShape();
 		var obj = Std.downcast(col, h3d.col.ObjectCollider);
 		if( obj != null ) {
-			return Shape.fromHeaps(obj.collider);
+			if( follows != null ) {
+				if( follows.length > 0 && follows[0] != obj.obj )
+					throw "Don't know how to follow multiple objects";
+				follows.push(obj.obj);
+			}
+			return Shape.fromHeaps(obj.collider, follows);
 		}
 		var opt = Std.downcast(col, h3d.col.Collider.OptimizedCollider);
 		if( opt != null ) {
-			return Shape.fromHeaps(opt.b);
+			return Shape.fromHeaps(opt.b, follows);
 		}
 		var trans = Std.downcast(col, h3d.col.TransformCollider);
 		if( trans != null ) {
 			var mat = trans.mat;
-			var s = Shape.fromHeaps(trans.collider);
+			var s = Shape.fromHeaps(trans.collider, follows);
 			return Shape.transformed(s, Vec3.fromHeaps(mat.getPosition()), Vec3.fromHeaps(mat.getEulerAngles()), Vec3.fromHeaps(mat.getScale()));
 		}
 		var position = new Vec3();
@@ -92,7 +101,7 @@ abstract class Shape {
 		if( group != null ) {
 			var compound = new CompoundShape();
 			for( c in group.colliders ) {
-				var s = Shape.fromHeaps(c);
+				var s = Shape.fromHeaps(c, follows);
 				var sc = Std.downcast(s, CompoundShape);
 				if( sc != null ) {
 					for( ss in sc.subShapes ) {
@@ -118,6 +127,9 @@ abstract class Shape {
 		var box = Std.downcast(col, h3d.col.OrientedBounds);
 		if( box != null )
 			return BoxShape.fromHeaps(box, position, rotation);
+		var bounds = Std.downcast(col, h3d.col.Bounds);
+		if( bounds != null )
+			return BoxShape.fromHeapsBounds(bounds, position, rotation);
 		var capsule = Std.downcast(col, h3d.col.Capsule);
 		if( capsule != null )
 			return CapsuleShape.fromHeaps(capsule, position, rotation);
