@@ -19,6 +19,8 @@ class CompoundAlgorithm {
 
 		var hasCollide = false;
 		for( sub in shape2.subShapes ) {
+			if( !collector.curWantsMoreHits )
+				break;
 			var subScale = freeVec.get();
 			subScale.load(sub.transformScale(scale2));
 			var subTrans = freeMat.get();
@@ -37,6 +39,8 @@ class CompoundAlgorithm {
 
 		var hasCollide = false;
 		for( sub in shape1.subShapes ) {
+			if( !collector.curWantsMoreHits )
+				break;
 			var subScale = freeVec.get();
 			subScale.load(sub.transformScale(scale1));
 			var subTrans = freeMat.get();
@@ -55,6 +59,8 @@ class CompoundAlgorithm {
 
 		var hasCollide = false;
 		for( sub in shape2.subShapes ) {
+			if( !collector.curWantsMoreHits )
+				break;
 			var subScale = freeVec.get();
 			subScale.load(sub.transformScale(scale2));
 			var subTrans = freeMat.get();
@@ -75,6 +81,8 @@ class CompoundAlgorithm {
 
 		var hasCollide = false;
 		for( sub in shape1.subShapes ) {
+			if( !collector.curWantsMoreHits )
+				break;
 			var subShapeCast = freeShapecast.get();
 			subShapeCast.shape = sub.shape;
 			subShapeCast.direction = shapeCast.direction;
@@ -93,6 +101,8 @@ class CompoundAlgorithm {
 
 		var hasCollide = false;
 		for( sub in shape.subShapes ) {
+			if( !collector.curWantsMoreHits )
+				break;
 			var subScale = freeVec.get();
 			subScale.load(sub.transformScale(scale));
 			var subTrans = freeMat.get();

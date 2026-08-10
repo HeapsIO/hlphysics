@@ -5,6 +5,7 @@ enum CollectorMode {
 	Closest;
 	ClosestPerBody;
 	Any;
+	AnyPerBody;
 }
 
 class CollideCollector extends Collector<ContactPoint> {
@@ -64,9 +65,9 @@ abstract class Collector<T> {
 	public var mode(default, null) : CollectorMode;
 
 	var curId : BodyID;
-	var curMaxFraction : Scalar;
+	public var curMaxFraction(default, null) : Scalar;
+	public var curWantsMoreHits(default, null) : Bool;
 
-	public var canAddHit(default, null): Bool;
 	public var length(get, never):Int;
 	inline function get_length() {
 		return results.length;
@@ -92,7 +93,7 @@ abstract class Collector<T> {
 		this.mode = mode;
 		curId = -1;
 		curMaxFraction = maxFraction;
-		canAddHit = true;
+		curWantsMoreHits = true;
 	}
 
 	#if physics_profile
@@ -118,6 +119,8 @@ abstract class Collector<T> {
 		curId = id;
 		if( mode == ClosestPerBody )
 			curMaxFraction = maxFraction;
+		else if( mode == AnyPerBody )
+			curWantsMoreHits = true;
 		#if physics_profile
 		if( profWorld != null )
 			profStart = haxe.Timer.stamp();
@@ -136,14 +139,17 @@ abstract class Collector<T> {
 		curId = -1;
 		if( mode == ClosestPerBody )
 			curMaxFraction = maxFraction;
-	}
-
-	public inline function getCurrentMaxFraction() : Scalar {
-		return curMaxFraction;
+		else if( mode == AnyPerBody )
+			curWantsMoreHits = true;
 	}
 
 	public inline function hasResult() : Bool {
 		return results.length > 0;
+	}
+
+	public inline function getFirstResult() : { r : Null<T>, b2 : BodyID } {
+		var has = hasResult();
+		return { r : has ? results.get(0) : null, b2 : has ? ids[0] : -1 };
 	}
 
 	public inline function iterResult( callback : (r:T, b2:BodyID) -> Void ) {
@@ -234,7 +240,13 @@ abstract class Collector<T> {
 				r = results.pushEmpty();
 				ids.push(curId);
 			}
-			canAddHit = false;
+			curWantsMoreHits = false;
+		case AnyPerBody:
+			if( ids.length == 0 || ids[ids.length - 1] != curId ) {
+				r = results.pushEmpty();
+				ids.push(curId);
+			}
+			curWantsMoreHits = false;
 		}
 		return r;
 	}

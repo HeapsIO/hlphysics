@@ -114,7 +114,7 @@ class ConvexVsConvexAlgorithm {
 		var support1 = getSupportWithCache1(shape1, shapeCast.scale);
 		var support2 = getSupportWithCache2(shape2, scale2);
 		transformedSupport.initWithCache(support1, transform1);
-		var maxFraction = collector.getCurrentMaxFraction();
+		var maxFraction = collector.curMaxFraction;
 		var lambda = gjk.shapecast(shapeCastDirection, transformedSupport, support2, maxFraction, shapeCast.collisionTolerance, penetrationAxis, a, b);
 		if ( lambda == Math.SCALAR_MAX )
 			return false;

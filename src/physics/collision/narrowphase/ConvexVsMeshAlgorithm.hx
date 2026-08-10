@@ -40,7 +40,7 @@ class MeshCollideVisitor extends TreeVisitor {
 			var tri = @:privateAccess mesh.getTriangle(id);
 			algo.testCollision(convex, tri, scaleConvex, scaleMesh, transformConvex, transformMesh, collector);
 		}
-		return true;
+		return collector.curWantsMoreHits;
 	}
 }
 
@@ -78,18 +78,18 @@ class MeshShapeCastVisitor extends TreeVisitor {
 	public function visitNode( node : TreeNode ) : Bool {
 		var enlargeAABB = node.aabb.scaled(scaleMesh);
 		enlargeAABB.enlargeWithExtent(halfExtent);
-		return enlargeAABB.raycast(ray) < collector.getCurrentMaxFraction();
+		return enlargeAABB.raycast(ray) < collector.curMaxFraction;
 	}
 
 	public function visitBody( node : TreeNode ) : Bool {
 		var enlargeAABB = node.aabb.scaled(scaleMesh);
 		enlargeAABB.enlargeWithExtent(halfExtent);
-		if( enlargeAABB.raycast(ray) < collector.getCurrentMaxFraction() ) {
+		if( enlargeAABB.raycast(ray) < collector.curMaxFraction ) {
 			var id = node.bodyID;
 			var tri = @:privateAccess mesh.getTriangle(id);
 			algo.shapecast(convex, tri, scaleMesh, transformMesh, collector);
 		}
-		return true;
+		return collector.curWantsMoreHits;
 	}
 }
 
@@ -113,21 +113,20 @@ class MeshRayCastVisitor extends TreeVisitor {
 	}
 
 	public function visitNode( node : TreeNode ) : Bool {
-		return node.aabb.scaled(scaleMesh).raycast(ray) < collector.getCurrentMaxFraction();
+		return node.aabb.scaled(scaleMesh).raycast(ray) < collector.curMaxFraction;
 	}
 
 	public function visitBody( node : TreeNode ) : Bool {
-		if ( node.aabb.scaled(scaleMesh).raycast(ray) < collector.getCurrentMaxFraction() ) {
+		if ( node.aabb.scaled(scaleMesh).raycast(ray) < collector.curMaxFraction ) {
 			var id = node.bodyID;
 			var tri = @:privateAccess mesh.getTriangle(id).scaled(scaleMesh);
 			if ( tri.raycast(ray, Vec3.one(), Mat.identity(), hitResult) ) {
 				collector.onBody(id);
 				collector.addHit(hitResult.position, hitResult.normal, hitResult.fraction);
 				collector.onBodyEnd();
-				return true;
 			}
 		}
-		return true;
+		return collector.curWantsMoreHits;
 	}
 }
 
@@ -171,7 +170,7 @@ class ConvexVsMeshAlgorithm {
 		var tdirection = ray.direction.transformed3x3(invTransform);
 		if( meshRayCastVisitor == null )
 			meshRayCastVisitor = new MeshRayCastVisitor();
-		var maxFraction = collector.getCurrentMaxFraction();
+		var maxFraction = collector.curMaxFraction;
 		var mode = collector.mode == ClosestPerBody ? Closest : collector.mode;
 		meshRayCastVisitor.init(torigin, tdirection, shape, scale, maxFraction, mode);
 		shape.tree.walkTree(meshRayCastVisitor);

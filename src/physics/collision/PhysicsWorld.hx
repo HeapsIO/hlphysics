@@ -82,7 +82,7 @@ private class CollideVisitor extends TreeVisitor {
 			algoCtx.collide(shape, body.shape, scale, body.scale, transform, body.transform, collector);
 			collector.onBodyEnd();
 		}
-		return collector.canAddHit;
+		return collector.curWantsMoreHits;
 	}
 }
 
@@ -115,7 +115,7 @@ private class ShapeCastVisitor extends TreeVisitor {
 	public function visitNode( node : TreeNode ) : Bool {
 		var enlargeAABB = node.aabb.clone();
 		enlargeAABB.enlargeWithExtent(halfExtent);
-		return enlargeAABB.raycast(ray) < collector.getCurrentMaxFraction();
+		return enlargeAABB.raycast(ray) < collector.curMaxFraction;
 	}
 
 	public function visitBody( node : TreeNode ) : Bool {
@@ -123,12 +123,12 @@ private class ShapeCastVisitor extends TreeVisitor {
 		enlargeAABB.enlargeWithExtent(halfExtent);
 		var id = node.bodyID;
 		var body = world.getBody(id);
-		if ( body.filter(collisionMask) && enlargeAABB.raycast(ray) < collector.getCurrentMaxFraction() ) {
+		if ( body.filter(collisionMask) && enlargeAABB.raycast(ray) < collector.curMaxFraction ) {
 			collector.onBody(id);
 			algoCtx.shapecast(shapeCast, body.shape, body.scale, body.transform, collector);
 			collector.onBodyEnd();
 		}
-		return collector.canAddHit;
+		return collector.curWantsMoreHits;
 	}
 }
 
@@ -152,18 +152,18 @@ private class RayCastVisitor extends TreeVisitor {
 	}
 
 	public function visitNode( node : TreeNode ) : Bool {
-		return node.aabb.raycast(ray) < collector.getCurrentMaxFraction();
+		return node.aabb.raycast(ray) < collector.curMaxFraction;
 	}
 
 	public function visitBody( node : TreeNode ) : Bool {
 		var id = node.bodyID;
 		var body = world.getBody(id);
-		if ( body.filter(collisionMask) && node.aabb.raycast(ray) < collector.getCurrentMaxFraction() ) {
+		if ( body.filter(collisionMask) && node.aabb.raycast(ray) < collector.curMaxFraction ) {
 			collector.onBody(id);
 			algoCtx.raycast(ray, body.shape, body.scale, body.transform, hitResult, collector);
 			collector.onBodyEnd();
 		}
-		return collector.canAddHit;
+		return collector.curWantsMoreHits;
 	}
 }
 

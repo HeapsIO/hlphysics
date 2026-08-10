@@ -79,9 +79,9 @@ abstract class Shape {
 		var obj = Std.downcast(col, h3d.col.ObjectCollider);
 		if( obj != null ) {
 			if( follows != null ) {
-				if( follows.length > 0 && follows[0] != obj.obj )
-					throw "Don't know how to follow multiple objects";
-				follows.push(obj.obj);
+				Assert.w(follows.length == 0 || follows[0] == obj.obj, "Multiple follow objects: " + follows[0].name + ", " + obj.obj.name);
+				if( follows.length == 0 )
+					follows.push(obj.obj);
 			}
 			return Shape.fromHeaps(obj.collider, follows);
 		}
