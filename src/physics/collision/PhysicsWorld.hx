@@ -217,9 +217,9 @@ class PhysicsWorld {
 	var rayCastVisitor : RayCastVisitor;
 	var rayCastCollector : RayCastCollector;
 
-	public function new( maxBodies : Int, profiler : Profiler = null ) {
+	public function new( initialCapacity : Int, profiler : Profiler = null ) {
 		this.profiler = profiler;
-		bodies = new PhysicsContainer(Body, maxBodies);
+		bodies = new PhysicsContainer(Body, initialCapacity);
 		tree = new AABBTree(0.);
 		initWorkerData();
 	}

@@ -44,6 +44,8 @@ typedef ID = Int;
 	}
 
 	public function resize( newCapacity : Int ) {
+		if( newCapacity <= capacity )
+			throw "Invalid new size, wants " + newCapacity + " <= " + capacity;
 		var oldContainer = container;
 		var oldIdToIndex = idToIndex;
 		var oldIndexToId = indexToId;

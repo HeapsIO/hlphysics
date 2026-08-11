@@ -35,6 +35,8 @@ package physics.utils;
 	}
 
 	public function resize( newCapacity : Int ) {
+		if( newCapacity <= capacity )
+			throw "Invalid new size, wants " + newCapacity + " <= " + capacity;
 		var oldContainer = container;
 		capacity = newCapacity;
 		container = hl.CArray.alloc(cl, newCapacity);
