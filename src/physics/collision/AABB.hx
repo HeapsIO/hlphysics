@@ -6,7 +6,7 @@ class AABB {
 	@:packed public var max : Vec3;
 
 	public static inline function empty() {
-		return new AABB(new Vec3(Math.SCALAR_MAX, Math.SCALAR_MAX, Math.SCALAR_MAX), new Vec3(Math.SCALAR_MIN, Math.SCALAR_MIN, Math.SCALAR_MIN));
+		return new AABB(new Vec3(0.0, 0.0, 0.0), new Vec3(0.0, 0.0, 0.0));
 	}
 
 	public inline function new( min : Vec3, max : Vec3 ) {
