@@ -71,19 +71,28 @@ abstract class Shape {
 	#if heaps
 	/**
 		Convert heaps collider to Shape.
-		If `follows` is given, records `ObjectCollider` obj into it - only a single object is supported.
+		If `follows` is given empty, the first `ObjectCollider` found is recorded into it as the root; pass it
+		pre-filled with a single object to force that object as the root instead. Any other `ObjectCollider`
+		found is baked relative to the root.
 	**/
 	public static function fromHeaps( col : h3d.col.Collider, ?follows : Array<h3d.scene.Object> ) : Shape {
 		if( col == null )
 			return new EmptyShape();
 		var obj = Std.downcast(col, h3d.col.ObjectCollider);
 		if( obj != null ) {
+			var relative : h3d.Matrix = null;
 			if( follows != null ) {
-				Assert.w(follows.length == 0 || follows[0] == obj.obj, "Multiple follow objects: " + follows[0].name + ", " + obj.obj.name);
 				if( follows.length == 0 )
 					follows.push(obj.obj);
+				else if( follows[0] != obj.obj ) {
+					relative = obj.obj.getAbsPos().clone();
+					relative.multiply(relative, follows[0].getInvPos());
+				}
 			}
-			return Shape.fromHeaps(obj.collider, follows);
+			var s = Shape.fromHeaps(obj.collider, follows);
+			if( relative != null )
+				s = Shape.transformed(s, Vec3.fromHeaps(relative.getPosition()), Vec3.fromHeaps(relative.getEulerAngles()), Vec3.fromHeaps(relative.getScale()));
+			return s;
 		}
 		var opt = Std.downcast(col, h3d.col.Collider.OptimizedCollider);
 		if( opt != null ) {
@@ -136,14 +145,31 @@ abstract class Shape {
 		var cylinder = Std.downcast(col, h3d.col.Cylinder);
 		if( cylinder != null )
 			return CylinderShape.fromHeaps(cylinder, position, rotation);
-		var poly = Std.downcast(col, h3d.col.PolygonBuffer);
-		if( poly != null ) {
+		var polygon = Std.downcast(col, h3d.col.Polygon);
+		if( polygon != null ) {
 			position.set(0.0, 0.0, 0.0);
 			rotation.set(0.0, 0.0, 0.0);
-			if( poly.isConvex )
-				return ConvexHullShape.fromHeaps(poly);
+			var vertices : Array<Single> = [];
+			var indexes : Array<Int> = [];
+			for( idx => p in polygon.getPoints() ) {
+				vertices.push(p.x);
+				vertices.push(p.y);
+				vertices.push(p.z);
+				indexes.push(idx);
+			}
+			if( polygon.isConvex() )
+				return new ConvexHullShape(vertices, indexes);
 			else
-				return MeshShape.fromHeaps(poly);
+				return new MeshShape(vertices, indexes);
+		}
+		var polygonBuffer = Std.downcast(col, h3d.col.PolygonBuffer);
+		if( polygonBuffer != null ) {
+			position.set(0.0, 0.0, 0.0);
+			rotation.set(0.0, 0.0, 0.0);
+			if( polygonBuffer.isConvex )
+				return ConvexHullShape.fromHeaps(polygonBuffer);
+			else
+				return MeshShape.fromHeaps(polygonBuffer);
 		}
 		var skin = Std.downcast(col, h3d.col.SkinCollider);
 		if( skin != null ) {
