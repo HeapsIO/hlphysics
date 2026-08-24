@@ -1,3 +1,4 @@
+#if !macro
 import physics.math.Math;
 import physics.math.Vec3;
 import physics.math.Vec4;
@@ -14,3 +15,4 @@ import physics.collision.narrowphase.*;
 import physics.collision.broadphase.*;
 import physics.utils.*;
 import physics.utils.PhysicsContainer;
+#end
