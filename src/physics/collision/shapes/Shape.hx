@@ -46,6 +46,7 @@ abstract class Shape {
 	public inline function isConvex() : Bool { return shapeType.isConvex(); }
 	public abstract function toString() : String;
 	public function mustBeStatic() : Bool { return false; }
+	public function buildLater() : Void {}
 	public abstract function getLocalBounds() : AABB;
 	/**
 		Similar to `getLocalBounds()` but use `out` buffer to reduce alloc.

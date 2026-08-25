@@ -68,6 +68,11 @@ class CompoundShape extends Shape {
 		return false;
 	}
 
+	override function buildLater() : Void {
+		for( sub in subShapes )
+			sub.shape.buildLater();
+	}
+
 	public inline function getLocalBounds() {
 		return localBounds;
 	}

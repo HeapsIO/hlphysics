@@ -36,6 +36,10 @@ class ScaledShape extends Shape {
 		throw "Should not be called directly"; // See ScaledAlgorithm.raycast
 	}
 
+	override function buildLater() : Void {
+		shape.buildLater();
+	}
+
 	public inline function isScaleValid( scale : Vec3 ) : Bool {
 		tmpVec.load(scale.multiplied(this.scale));
 		return shape.isScaleValid(tmpVec);

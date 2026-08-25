@@ -232,9 +232,8 @@ class PhysicsWorld {
 		body.load(bodyToAdd);
 		var aabb = body.getWorldBounds();
 		body.nodeID = tree.addBody(aabb, id);
-		var mesh = Std.downcast(body.shape, MeshShape);
-		if ( mesh != null )
-			AsyncWorker.run(() -> mesh.buildTree());
+		var shape = body.shape;
+		AsyncWorker.run(() -> shape.buildLater());
 		return id;
 	}
 

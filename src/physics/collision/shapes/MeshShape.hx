@@ -36,24 +36,11 @@ class MeshShape extends Shape {
 		}
 	}
 
-	/**
-		Visits `tree` if it has been built, otherwise brute-force over all triangles.
-	**/
-	public function walk( visitor : TreeVisitor, tmpNode : TreeNode ) : Void {
-		if ( tree != null ) {
-			tree.walkTree(visitor);
-			return;
-		}
-		var triCount = triangles.length;
-		for ( i in 0...triCount ) {
-			triangles.get(i).getLocalBoundsToBuffer(tmpNode.aabb);
-			tmpNode.bodyID = i;
-			if ( !visitor.visitBody(tmpNode) )
-				break;
-		}
+	public function toString() {
+		return "Mesh";
 	}
 
-	public function buildTree() : Void {
+	override function buildLater() : Void {
 		if( tree != null )
 			return;
 		// Might be called from a thread, assign tree at the end
@@ -66,10 +53,6 @@ class MeshShape extends Shape {
 		}
 		t.build(bounds);
 		tree = t;
-	}
-
-	public function toString() {
-		return "Mesh";
 	}
 
 	public inline function getLocalBounds() {
@@ -98,6 +81,23 @@ class MeshShape extends Shape {
 
 	public inline function makeScaleValid( scale : Vec3 ) {
 		scale.load(ScaleHelper.makeNonZero(scale));
+	}
+
+	/**
+		Visits `tree` if it has been built, otherwise brute-force over all triangles.
+	**/
+	public function walk( visitor : TreeVisitor, tmpNode : TreeNode ) : Void {
+		if ( tree != null ) {
+			tree.walkTree(visitor);
+			return;
+		}
+		var triCount = triangles.length;
+		for ( i in 0...triCount ) {
+			triangles.get(i).getLocalBoundsToBuffer(tmpNode.aabb);
+			tmpNode.bodyID = i;
+			if ( !visitor.visitBody(tmpNode) )
+				break;
+		}
 	}
 
 	#if heaps

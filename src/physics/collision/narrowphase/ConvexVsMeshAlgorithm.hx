@@ -178,7 +178,11 @@ class ConvexVsMeshAlgorithm {
 		if( tmpNode == null )
 			tmpNode = new TreeNode();
 		var maxFraction = collector.curMaxFraction;
-		var mode = collector.mode == ClosestPerBody ? Closest : collector.mode;
+		var mode = switch( collector.mode ) {
+			case ClosestPerBody: Closest;
+			case AnyPerBody: Any;
+			case m: m;
+		}
 		meshRayCastVisitor.init(torigin, tdirection, shape, scale, maxFraction, mode);
 		shape.walk(meshRayCastVisitor, tmpNode);
 		meshRayCastVisitor.collector.iterResult(function(best, bestId) {
