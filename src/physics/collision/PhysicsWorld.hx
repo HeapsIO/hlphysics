@@ -171,6 +171,7 @@ class PhysicsWorld {
 	var bodies : PhysicsContainer<Body>;
 	var tree : AABBTree;
 	var jobSystem : JobSystem;
+	var disposed = false;
 
 	var workersData : hl.NativeArray<WorkerData>;
 
@@ -221,6 +222,7 @@ class PhysicsWorld {
 		this.profiler = profiler;
 		bodies = new PhysicsContainer(Body, initialCapacity);
 		tree = new AABBTree(0.);
+		AsyncWorker.acquire();
 		initWorkerData();
 	}
 
@@ -230,6 +232,9 @@ class PhysicsWorld {
 		body.load(bodyToAdd);
 		var aabb = body.getWorldBounds();
 		body.nodeID = tree.addBody(aabb, id);
+		var mesh = Std.downcast(body.shape, MeshShape);
+		if ( mesh != null )
+			AsyncWorker.run(() -> mesh.buildTree());
 		return id;
 	}
 
@@ -287,6 +292,15 @@ class PhysicsWorld {
 			var aabb = b.getWorldBounds();
 			tree.updateBody(b.nodeID, aabb, false);
 		}
+	}
+
+	public function dispose() {
+		if ( disposed )
+			return;
+		disposed = true;
+		AsyncWorker.release();
+		if ( jobSystem != null )
+			jobSystem.shutdown();
 	}
 
 	public function findCollisionsByPair( callback : (arr:StaticArray<ContactPoint>, start:Int, count:Int, b1:Int, b2:Int) -> Void ) {

@@ -53,6 +53,8 @@ class AABBTree {
 	}
 
 	function init( initSize : Int ) {
+		if( initSize < 1 )
+			initSize = 1;
 		rootID = TreeNode.NULL_TREE_NODE;
 		nodeCount = 0;
 		allocatedNodeCount = initSize;
@@ -169,6 +171,103 @@ class AABBTree {
 		insertLeafNode(nodeID);
 
 		return true;
+	}
+
+	/**
+		Build entire tree at once, `bodyID` of each leaf is its index in `bounds`.
+	**/
+	public function build( bounds : StaticArray<AABB> ) : Void {
+		Assert.t(nodeCount == 0);
+		var n = bounds.length;
+		if ( n == 0 ) {
+			rootID = TreeNode.NULL_TREE_NODE;
+			return;
+		}
+		var centroids = new Array<Scalar>();
+		for ( i in 0...n ) {
+			var c = bounds.get(i).getCenter();
+			centroids.push(c.x);
+			centroids.push(c.y);
+			centroids.push(c.z);
+		}
+		var order = [for ( i in 0...n ) i];
+		rootID = buildRange(bounds, centroids, order, 0, n);
+	}
+
+	function buildRange( bounds : StaticArray<AABB>, centroids : Array<Scalar>, order : Array<Int>, begin : Int, end : Int ) : Int {
+		if ( end - begin == 1 ) {
+			var idx = order[begin];
+			var nodeID = allocNode();
+			var node = nodes.get(nodeID);
+			node.aabb = bounds.get(idx);
+			node.bodyID = idx;
+			return nodeID;
+		}
+
+		var meanX = 0.0, meanY = 0.0, meanZ = 0.0;
+		for ( i in begin...end ) {
+			var c = order[i] * 3;
+			meanX += centroids[c];
+			meanY += centroids[c + 1];
+			meanZ += centroids[c + 2];
+		}
+		var inv = 1.0 / (end - begin);
+		meanX *= inv;
+		meanY *= inv;
+		meanZ *= inv;
+
+		var devX = 0.0, devY = 0.0, devZ = 0.0;
+		for ( i in begin...end ) {
+			var c = order[i] * 3;
+			var dx = centroids[c] - meanX;
+			var dy = centroids[c + 1] - meanY;
+			var dz = centroids[c + 2] - meanZ;
+			devX += dx * dx;
+			devY += dy * dy;
+			devZ += dz * dz;
+		}
+		var axis = devX > devY ? (devZ > devX ? 2 : 0) : (devZ > devY ? 2 : 1);
+		var splitValue = axis == 0 ? meanX : (axis == 1 ? meanY : meanZ);
+
+		var left = begin;
+		var right = end;
+		while ( left < right ) {
+			while ( left < right && centroids[order[left] * 3 + axis] < splitValue )
+				left++;
+			while ( left < right && centroids[order[right - 1] * 3 + axis] >= splitValue )
+				right--;
+			if ( left < right ) {
+				right--;
+				var tmp = order[left];
+				order[left] = order[right];
+				order[right] = tmp;
+				left++;
+			}
+		}
+		Assert.t(left == right);
+
+		var mid = left;
+		if ( mid == begin || mid == end ) {
+			var half = (end - begin) >> 1;
+			Assert.t(half > 0);
+			mid = begin + half;
+		}
+
+		var leftID = buildRange(bounds, centroids, order, begin, mid);
+		var rightID = buildRange(bounds, centroids, order, mid, end);
+
+		var nodeID = allocNode();
+		var node = nodes.get(nodeID);
+		var leftNode = nodes.get(leftID);
+		var rightNode = nodes.get(rightID);
+		node.leftChild = leftID;
+		node.rightChild = rightID;
+		node.aabb.mergeTwo(leftNode.aabb, rightNode.aabb);
+		node.height = 1 + (leftNode.height > rightNode.height ? leftNode.height : rightNode.height);
+		leftNode.nextID = nodeID;
+		rightNode.nextID = nodeID;
+
+		return nodeID;
 	}
 
 	function insertLeafNode(nodeID : Int) {

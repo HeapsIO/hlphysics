@@ -134,6 +134,7 @@ class ConvexVsMeshAlgorithm {
 	var meshCollideVisitor : MeshCollideVisitor;
 	var meshShapeCastVisitor : MeshShapeCastVisitor;
 	var meshRayCastVisitor : MeshRayCastVisitor;
+	var tmpNode : TreeNode;
 
 	public function new() {
 	}
@@ -144,9 +145,11 @@ class ConvexVsMeshAlgorithm {
 
 		if( meshCollideVisitor == null )
 			meshCollideVisitor = new MeshCollideVisitor();
+		if( tmpNode == null )
+			tmpNode = new TreeNode();
 		var start = collector.length;
 		meshCollideVisitor.init(shape1, shape2, scale1, scale2, transform1, transform2, collector);
-		shape2.tree.walkTree(meshCollideVisitor);
+		shape2.walk(meshCollideVisitor, tmpNode);
 		return start < collector.length;
 	}
 
@@ -156,9 +159,11 @@ class ConvexVsMeshAlgorithm {
 
 		if( meshShapeCastVisitor == null )
 			meshShapeCastVisitor = new MeshShapeCastVisitor();
+		if( tmpNode == null )
+			tmpNode = new TreeNode();
 		var start = collector.length;
 		meshShapeCastVisitor.init(shapeCast, shape2, scale2, transform2, collector);
-		shape2.tree.walkTree(meshShapeCastVisitor);
+		shape2.walk(meshShapeCastVisitor, tmpNode);
 		return start < collector.length;
 	}
 
@@ -170,10 +175,12 @@ class ConvexVsMeshAlgorithm {
 		var tdirection = ray.direction.transformed3x3(invTransform);
 		if( meshRayCastVisitor == null )
 			meshRayCastVisitor = new MeshRayCastVisitor();
+		if( tmpNode == null )
+			tmpNode = new TreeNode();
 		var maxFraction = collector.curMaxFraction;
 		var mode = collector.mode == ClosestPerBody ? Closest : collector.mode;
 		meshRayCastVisitor.init(torigin, tdirection, shape, scale, maxFraction, mode);
-		shape.tree.walkTree(meshRayCastVisitor);
+		shape.walk(meshRayCastVisitor, tmpNode);
 		meshRayCastVisitor.collector.iterResult(function(best, bestId) {
 			var position = ray.getPoint(best.fraction);
 			var normal = shape.getTriangle(bestId).getSurfaceNormal(Vec3.zero()).transformed3x3(transform);

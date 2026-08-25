@@ -1,10 +1,9 @@
 package physics.utils;
 
-private class Worker {
+private class JobWorker {
 	var thread : sys.thread.Thread;
 	var workerID : Int;
 	var jobFinished : haxe.atomic.AtomicInt;
-	public var running : Bool = true;
 	final queue: sys.thread.Deque<Int->Void>;
 
 	public function new( queue : sys.thread.Deque<Int->Void>, workerID : Int, jobFinished : haxe.atomic.AtomicInt ) {
@@ -12,15 +11,18 @@ private class Worker {
 		this.workerID = workerID;
 		this.jobFinished = jobFinished;
 		thread = sys.thread.Thread.create(loop);
+		thread.name = "JobWorker" + workerID;
 	}
 
 	public function shutdown() {
-		running = false;
+		queue.add(null);
 	}
 
 	function loop() {
-		while(running) {
+		while( true ) {
 			var task = queue.pop(true);
+			if( task == null )
+				break;
 			task(workerID);
 			jobFinished.add(1);
 		}
@@ -28,7 +30,7 @@ private class Worker {
 }
 
 class JobSystem {
-	public var workerPool(default, null) : Array<Worker>;
+	public var workerPool(default, null) : Array<JobWorker>;
 	public var jobLaunched : Int;
 	public var jobFinished : haxe.atomic.AtomicInt;
 	final queue = new sys.thread.Deque<Int->Void>();
@@ -36,7 +38,7 @@ class JobSystem {
 	public function new( workerCount : Int ) {
 		jobLaunched = 0;
 		jobFinished = new haxe.atomic.AtomicInt(0);
-		workerPool = [for (i in 0...workerCount) new Worker(queue, i, jobFinished)];
+		workerPool = [for (i in 0...workerCount) new JobWorker(queue, i, jobFinished)];
 	}
 
 	public function runJob( fun : Int -> Void ) {
