@@ -92,6 +92,7 @@ class Body {
 		if( transformChanged ) {
 			transform.initRotationQuat(rotation);
 			transform.translate(position.x, position.y, position.z);
+			transformChanged = false;
 		}
 		return transform;
 	}
