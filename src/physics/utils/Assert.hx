@@ -3,7 +3,9 @@ package physics.utils;
 class Assert {
 	public static macro function t( condition : haxe.macro.Expr ) : haxe.macro.Expr {
 		#if physics_debug
-		return macro physics.utils.Assert.tImpl($condition);
+		var result = macro physics.utils.Assert.tImpl($condition);
+		result.pos = haxe.macro.Context.currentPos();
+		return result;
 		#else
 		return macro {};
 		#end
@@ -11,7 +13,9 @@ class Assert {
 
 	public static macro function w( condition : haxe.macro.Expr, msg : haxe.macro.Expr ) : haxe.macro.Expr {
 		#if physics_debug
-		return macro physics.utils.Assert.wImpl($condition, $msg);
+		var result = macro physics.utils.Assert.wImpl($condition, $msg);
+		result.pos = haxe.macro.Context.currentPos();
+		return result;
 		#else
 		return macro {};
 		#end

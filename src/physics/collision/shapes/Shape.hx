@@ -36,6 +36,13 @@ enum abstract ShapeType(Int) from Int to Int {
 	}
 }
 
+#if heaps
+typedef ShapeData = {
+	var shape : Shape;
+	var follow : Null<h3d.scene.Object>;
+}
+#end
+
 abstract class Shape {
 	var shapeType : ShapeType;
 	#if physics_profile
@@ -71,7 +78,28 @@ abstract class Shape {
 
 	#if heaps
 	/**
-		Convert heaps collider to Shape.
+		Convert a Heaps collider into independent shapes.
+	**/
+	public static function listFromHeaps( col : h3d.col.Collider, ?result : Array<ShapeData> ) : Array<ShapeData> {
+		if( result == null )
+			result = [];
+		var opt = Std.downcast(col, h3d.col.Collider.OptimizedCollider);
+		if( opt != null )
+			return listFromHeaps(opt.b, result);
+		var group = Std.downcast(col, h3d.col.Collider.GroupCollider);
+		if( group != null ) {
+			for( child in group.colliders )
+				listFromHeaps(child, result);
+			return result;
+		}
+		var follows = [];
+		var shape = fromHeaps(col, follows);
+		result.push({ shape : shape, follow : follows[0] });
+		return result;
+	}
+
+	/**
+		Convert a Heaps collider to Shape.
 		If `follows` is given empty, the first `ObjectCollider` found is recorded into it as the root; pass it
 		pre-filled with a single object to force that object as the root instead. Any other `ObjectCollider`
 		found is baked relative to the root.
