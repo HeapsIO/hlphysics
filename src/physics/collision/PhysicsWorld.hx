@@ -283,6 +283,12 @@ class PhysicsWorld {
 		rayCastCollector.iterResult(callback);
 	}
 
+	public inline function updateBody( id : BodyID ) {
+		var body = bodies.get(id);
+		var aabb = body.getWorldBounds();
+		tree.updateBody(body.nodeID, aabb, false);
+	}
+
 	public function update() {
 		mark("Update bodies");
 		for ( b in bodies ) {
