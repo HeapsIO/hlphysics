@@ -16,18 +16,21 @@ class ConvexHullSupport extends ConvexSupport {
 
 	public inline function getSupport( dir : Vec3, out : Vec3 ) {
 		var bestDot = Math.SCALAR_MIN;
-		out.set(0.0, 0.0, 0.0);
+		var bestPos = 0;
 		var points = @:privateAccess convex.points;
 		var scale = scale;
+		var scaledDirX = dir.x * scale.x;
+		var scaledDirY = dir.y * scale.y;
+		var scaledDirZ = dir.z * scale.z;
 		for ( i in 0...Std.int(points.length / 3) ) {
 			var pos = i * 3;
-			var p = new Vec3(points[pos++], points[pos++], points[pos]) * scale;
-			var dot = p.dot(dir);
+			var dot = points[pos] * scaledDirX + points[pos + 1] * scaledDirY + points[pos + 2] * scaledDirZ;
 			if ( dot > bestDot ) {
 				bestDot = dot;
-				out.load(p);
+				bestPos = pos;
 			}
 		}
+		out.set(points[bestPos] * scale.x, points[bestPos + 1] * scale.y, points[bestPos + 2] * scale.z);
 	}
 
 	public inline function getMargin() : Scalar {
