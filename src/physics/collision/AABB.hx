@@ -1,5 +1,11 @@
 package physics.collision;
 
+enum abstract PlaneIntersection(Int) {
+	var Back = -1;
+	var Intersecting = 0;
+	var Front = 1;
+}
+
 @:struct
 class AABB {
 	@:packed public var min : Vec3;
@@ -25,6 +31,19 @@ class AABB {
 
 	public inline function containsAABB( b : AABB ) {
 		return min.x <= b.min.x && min.y <= b.min.y && min.z <= b.min.z && max.x >= b.max.x && max.y >= b.max.y && max.z >= b.max.z;
+	}
+
+	public inline function intersectPlane( plane : Plane ) : PlaneIntersection {
+		var nx = plane.nx;
+		var ny = plane.ny;
+		var nz = plane.nz;
+		var centerDistance2 = nx * (max.x + min.x) + ny * (max.y + min.y) + nz * (max.z + min.z) - 2.0 * plane.distance;
+		var radius2 = Math.abs(nx) * (max.x - min.x) + Math.abs(ny) * (max.y - min.y) + Math.abs(nz) * (max.z - min.z);
+		if( centerDistance2 + radius2 < 0.0 )
+			return Back;
+		if( centerDistance2 - radius2 >= 0.0 )
+			return Front;
+		return Intersecting;
 	}
 
 	public inline function raycast( ray : Ray ) : Scalar {

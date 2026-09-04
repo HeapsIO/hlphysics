@@ -1,13 +1,51 @@
 package physics.collision.shapes;
 
 class FrustumShape extends ConvexHullShape {
+	public static inline final PLANE_COUNT = 6;
 
+	/**
+		The indices should describe 6 quad faces, with 2 consecutive triangles per face.
+	**/
 	public inline function new( points : Array<Single>, indices : Array<Int> ) {
 		super(points, indices);
 	}
 
 	override public function toString() {
 		return "Frustum";
+	}
+
+	public function getPlanes( scale : Vec3, transform : Mat, result : StaticArray<Plane> ) {
+		var points = this.points;
+		var indices = this.indices;
+		var pointCount = Std.int(points.length / 3);
+		var center = new Vec3();
+		for( i in 0...pointCount ) {
+			var pos = i * 3;
+			center.x += points[pos];
+			center.y += points[pos + 1];
+			center.z += points[pos + 2];
+		}
+		var invPointCount = 1.0 / pointCount;
+		center.x *= invPointCount * scale.x;
+		center.y *= invPointCount * scale.y;
+		center.z *= invPointCount * scale.z;
+		center.transform(transform);
+
+		var p0 = new Vec3();
+		var p1 = new Vec3();
+		var p2 = new Vec3();
+		inline function loadPoint( out : Vec3, index : Int ) {
+			var pos = index * 3;
+			out.set(points[pos] * scale.x, points[pos + 1] * scale.y, points[pos + 2] * scale.z);
+			out.transform(transform);
+		}
+		for( i in 0...PLANE_COUNT ) {
+			var indexPos = i * 6;
+			loadPoint(p0, indices[indexPos]);
+			loadPoint(p1, indices[indexPos + 1]);
+			loadPoint(p2, indices[indexPos + 2]);
+			result.get(i).setFromPoints(p0, p1, p2, center);
+		}
 	}
 
 	#if heaps

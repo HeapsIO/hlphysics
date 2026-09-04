@@ -37,8 +37,8 @@ class ConvexVsConvexAlgorithm {
 	var gjk : GJK;
 	var hull : EPAConvexHullBuilder;
 
-	var supportCache1 : Map<ShapeType, ConvexSupport>;
-	var supportCache2 : Map<ShapeType, ConvexSupport>;
+	var supportCache1 : Array<ConvexSupport>;
+	var supportCache2 : Array<ConvexSupport>;
 
 	@:packed var body2ToBody1 : Mat;
 	@:packed var penetrationAxis : Vec3;
@@ -53,17 +53,19 @@ class ConvexVsConvexAlgorithm {
 	public function new() {
 		gjk = new GJK();
 		hull = new EPAConvexHullBuilder();
-		supportCache1 = new Map();
-		supportCache2 = new Map();
+		supportCache1 = [];
+		supportCache1.resize(ShapeCount);
+		supportCache2 = [];
+		supportCache2.resize(ShapeCount);
 		transformedSupport = new TransformedConvexSupport();
 	}
 
-	static function getSupportWithCache( supportCache : Map<ShapeType, ConvexSupport>, shape : ConvexShape, scale : Vec3 ) : ConvexSupport {
+	static function getSupportWithCache( supportCache : Array<ConvexSupport>, shape : ConvexShape, scale : Vec3 ) : ConvexSupport {
 		var key : ShapeType = shape.getType();
-		var support = supportCache.get(key);
+		var support = supportCache[key];
 		if( support == null ) {
 			support = Type.createEmptyInstance(shape.getSupportClass());
-			supportCache.set(key, support);
+			supportCache[key] = support;
 		}
 		support.init(shape, scale);
 		return support;

@@ -86,6 +86,78 @@ private class CollideVisitor extends TreeVisitor {
 	}
 }
 
+private class FrustumOverlapVisitor extends TreeVisitor {
+	var frustum : FrustumShape;
+	var scale : Vec3;
+	var transform : Mat;
+	var world : PhysicsWorld;
+	var collisionMask : Int;
+	var algoCtx : AlgorithmContext;
+	var collector : CollideCollector;
+	var planes : StaticArray<Plane>;
+	@:packed var emptyVec : Vec3;
+
+	public function new() {
+		algoCtx = new AlgorithmContext();
+		collector = new CollideCollector();
+		planes = new StaticArray(Plane, FrustumShape.PLANE_COUNT);
+		for( _ in 0...FrustumShape.PLANE_COUNT )
+			planes.pushEmpty();
+	}
+
+	public function init( frustum : FrustumShape, scale : Vec3, transform : Mat, world : PhysicsWorld, collisionMask : Int ) {
+		this.frustum = frustum;
+		this.scale = scale;
+		this.transform = transform;
+		this.world = world;
+		this.collisionMask = collisionMask;
+		collector.init(Math.SCALAR_MAX, AnyPerBody);
+		frustum.getPlanes(scale, transform, planes);
+	}
+
+	public inline function iterResult( callback : BodyID -> Bool ) {
+		collector.iterBodyIDs(callback);
+	}
+
+	function intersectAABB( aabb : AABB ) : PlaneIntersection {
+		var result = PlaneIntersection.Front;
+		for( i in 0...FrustumShape.PLANE_COUNT ) {
+			switch( aabb.intersectPlane(planes.get(i)) ) {
+			case Back:
+				return Back;
+			case Intersecting:
+				result = Intersecting;
+			case Front:
+			}
+		}
+		return result;
+	}
+
+	public function visitNode( node : TreeNode ) : Bool {
+		return intersectAABB(node.aabb) != Back;
+	}
+
+	public function visitBody( node : TreeNode ) : Bool {
+		var id = node.bodyID;
+		var body = world.getBody(id);
+		if( !body.filter(collisionMask) )
+			return true;
+		switch( intersectAABB(node.aabb) ) {
+		case Back:
+			return true;
+		case Front:
+			collector.onBody(id);
+			collector.addHit(emptyVec, emptyVec, emptyVec, 0.0);
+			collector.onBodyEnd();
+		case Intersecting:
+			collector.onBody(id);
+			algoCtx.collide(frustum, body.shape, scale, body.scale, transform, body.transform, collector);
+			collector.onBodyEnd();
+		}
+		return true;
+	}
+}
+
 private class ShapeCastVisitor extends TreeVisitor {
 	var shapeCast : ShapeCast;
 	var collisionMask : Int;
@@ -213,6 +285,7 @@ class PhysicsWorld {
 	public var profiler : Profiler;
 	var collideVisitor : CollideVisitor;
 	var collideCollector : CollideCollector;
+	var frustumOverlapVisitor : FrustumOverlapVisitor;
 	var shapeCastVisitor : ShapeCastVisitor;
 	var shapeCastCollector : ShapeCastCollector;
 	var rayCastVisitor : RayCastVisitor;
@@ -259,6 +332,15 @@ class PhysicsWorld {
 		collideVisitor.init(shape, scale, transform, this, collideCollector, collisionMask);
 		tree.walkTree(collideVisitor);
 		collideCollector.iterResult(callback);
+	}
+
+	public inline function overlapFrustum( frustum : FrustumShape, scale : Vec3, transform : Mat, callback : BodyID -> Bool, collisionMask : Int = ~0 ) {
+		if( frustumOverlapVisitor == null )
+			frustumOverlapVisitor = new FrustumOverlapVisitor();
+		Assert.t(frustum.isScaleValid(scale));
+		frustumOverlapVisitor.init(frustum, scale, transform, this, collisionMask);
+		tree.walkTree(frustumOverlapVisitor);
+		frustumOverlapVisitor.iterResult(callback);
 	}
 
 	public inline function shapecast( shapeCast : ShapeCast, callback : (ShapeCastResult, BodyID) -> Bool, maxFraction : Scalar = Math.SCALAR_MAX, collisionMask : Int = ~0, mode : CollectorMode = Closest ) {

@@ -158,6 +158,13 @@ abstract class Collector<T> {
 		}
 	}
 
+	public inline function iterBodyIDs( callback : BodyID -> Bool ) {
+		for( i in 0...results.length ) {
+			if( !callback(ids[i]) )
+				break;
+		}
+	}
+
 	public inline function iterResultsByBody( callback : (arr:StaticArray<T>, start:Int, count:Int, b2:Int) -> Void ) {
 		if( results.length > 0 ) {
 			var len = results.length;
