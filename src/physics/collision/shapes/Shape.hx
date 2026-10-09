@@ -80,20 +80,20 @@ abstract class Shape {
 	/**
 		Convert a Heaps collider into independent shapes.
 	**/
-	public static function listFromHeaps( col : h3d.col.Collider, ?result : Array<ShapeData> ) : Array<ShapeData> {
+	public static function listFromHeaps( col : h3d.col.Collider, ?result : Array<ShapeData>, ?cache : Map<h3d.col.Collider, Shape> ) : Array<ShapeData> {
 		if( result == null )
 			result = [];
 		var opt = Std.downcast(col, h3d.col.Collider.OptimizedCollider);
 		if( opt != null )
-			return listFromHeaps(opt.b, result);
+			return listFromHeaps(opt.b, result, cache);
 		var group = Std.downcast(col, h3d.col.Collider.GroupCollider);
 		if( group != null ) {
 			for( child in group.colliders )
-				listFromHeaps(child, result);
+				listFromHeaps(child, result, cache);
 			return result;
 		}
 		var follows = [];
-		var shape = fromHeaps(col, follows);
+		var shape = fromHeaps(col, follows, cache);
 		result.push({ shape : shape, follow : follows[0] });
 		return result;
 	}
@@ -104,7 +104,7 @@ abstract class Shape {
 		pre-filled with a single object to force that object as the root instead. Any other `ObjectCollider`
 		found is baked relative to the root.
 	**/
-	public static function fromHeaps( col : h3d.col.Collider, ?follows : Array<h3d.scene.Object> ) : Shape {
+	public static function fromHeaps( col : h3d.col.Collider, ?follows : Array<h3d.scene.Object>, ?cache : Map<h3d.col.Collider, Shape> ) : Shape {
 		if( col == null )
 			return new EmptyShape();
 		var obj = Std.downcast(col, h3d.col.ObjectCollider);
@@ -118,19 +118,19 @@ abstract class Shape {
 					relative.multiply(relative, follows[0].getInvPos());
 				}
 			}
-			var s = Shape.fromHeaps(obj.collider, follows);
+			var s = Shape.fromHeaps(obj.collider, follows, cache);
 			if( relative != null )
 				s = Shape.transformed(s, Vec3.fromHeaps(relative.getPosition()), Vec3.fromHeaps(relative.getEulerAngles()), Vec3.fromHeaps(relative.getScale()));
 			return s;
 		}
 		var opt = Std.downcast(col, h3d.col.Collider.OptimizedCollider);
 		if( opt != null ) {
-			return Shape.fromHeaps(opt.b, follows);
+			return Shape.fromHeaps(opt.b, follows, cache);
 		}
 		var trans = Std.downcast(col, h3d.col.TransformCollider);
 		if( trans != null ) {
 			var mat = trans.mat;
-			var s = Shape.fromHeaps(trans.collider, follows);
+			var s = Shape.fromHeaps(trans.collider, follows, cache);
 			return Shape.transformed(s, Vec3.fromHeaps(mat.getPosition()), Vec3.fromHeaps(mat.getEulerAngles()), Vec3.fromHeaps(mat.getScale()));
 		}
 		var position = new Vec3();
@@ -139,7 +139,7 @@ abstract class Shape {
 		if( group != null ) {
 			var compound = new CompoundShape();
 			for( c in group.colliders ) {
-				var s = Shape.fromHeaps(c, follows);
+				var s = Shape.fromHeaps(c, follows, cache);
 				var sc = Std.downcast(s, CompoundShape);
 				if( sc != null ) {
 					for( ss in sc.subShapes ) {
@@ -151,14 +151,14 @@ abstract class Shape {
 			}
 			return compound;
 		}
-		var shape = Shape.fromHeapsSimple(col, position, rotation);
+		var shape = Shape.fromHeapsSimple(col, position, rotation, cache);
 		if( shape != null ) {
 			return Shape.transformed(shape, position, rotation, Vec3.one());
 		}
 		throw "Don't know how to convert shape " + col;
 	}
 
-	static function fromHeapsSimple( col : h3d.col.Collider, position : Vec3, rotation : Vec3 ) : Shape {
+	static function fromHeapsSimple( col : h3d.col.Collider, position : Vec3, rotation : Vec3, ?cache : Map<h3d.col.Collider, Shape> ) : Shape {
 		var sphere = Std.downcast(col, h3d.col.Sphere);
 		if( sphere != null )
 			return SphereShape.fromHeaps(sphere, position, rotation);
@@ -178,6 +178,9 @@ abstract class Shape {
 		if( polygon != null ) {
 			position.set(0.0, 0.0, 0.0);
 			rotation.set(0.0, 0.0, 0.0);
+			var cached = cache?.get(col);
+			if( cached != null )
+				return cached;
 			var vertices : Array<Single> = [];
 			var indexes : Array<Int> = [];
 			for( idx => p in polygon.getPoints() ) {
@@ -186,19 +189,22 @@ abstract class Shape {
 				vertices.push(p.z);
 				indexes.push(idx);
 			}
-			if( polygon.isConvex() )
-				return new ConvexHullShape(vertices, indexes);
-			else
-				return new MeshShape(vertices, indexes);
+			var shape : Shape = polygon.isConvex() ? new ConvexHullShape(vertices, indexes) : new MeshShape(vertices, indexes);
+			if( cache != null )
+				cache.set(col, shape);
+			return shape;
 		}
 		var polygonBuffer = Std.downcast(col, h3d.col.PolygonBuffer);
 		if( polygonBuffer != null ) {
 			position.set(0.0, 0.0, 0.0);
 			rotation.set(0.0, 0.0, 0.0);
-			if( polygonBuffer.isConvex )
-				return ConvexHullShape.fromHeaps(polygonBuffer);
-			else
-				return MeshShape.fromHeaps(polygonBuffer);
+			var cached = cache?.get(col);
+			if( cached != null )
+				return cached;
+			var shape : Shape = polygonBuffer.isConvex ? ConvexHullShape.fromHeaps(polygonBuffer) : MeshShape.fromHeaps(polygonBuffer);
+			if( cache != null )
+				cache.set(col, shape);
+			return shape;
 		}
 		var skin = Std.downcast(col, h3d.col.SkinCollider);
 		if( skin != null ) {

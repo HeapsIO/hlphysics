@@ -38,9 +38,7 @@ abstract class Rigidbody extends h3d.scene.Object {
 		z = vec.z;
 		if ( world != null ) {
 			var body = world.getBody(bodyID);
-			body.position.x = vec.x;
-			body.position.y = vec.y;
-			body.position.z = vec.z;
+			body.setPosition(vec.x, vec.y, vec.z);
 		}
 	}
 
