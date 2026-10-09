@@ -5,7 +5,6 @@ class MeshShape extends Shape {
 	var points : Array<Single>;
 	var indices : Array<Int>;
 	var localBounds : AABB;
-	var triangles : StaticArray<TriangleShape>;
 	var tree(default, null) : Null<AABBTree>;
 
 	public inline function new( points : Array<Single>, indices : Array<Int> ) {
@@ -19,21 +18,6 @@ class MeshShape extends Shape {
 			bounds.addPos(new Vec3(points[pos++], points[pos++], points[pos]));
 		}
 		this.localBounds = bounds;
-		var triCount = Math.floor(indices.length / 3);
-		triangles = new StaticArray(TriangleShape, triCount);
-		for( triIndex in 0...triCount ) {
-			var tri = triangles.pushEmpty();
-			var i = triIndex * 3;
-			var i0 = indices[i++] * 3;
-			var p0 = new Vec3(points[i0++], points[i0++], points[i0]);
-			var i1 = indices[i++] * 3;
-			var p1 = new Vec3(points[i1++], points[i1++], points[i1]);
-			var i2 = indices[i] * 3;
-			var p2 = new Vec3(points[i2++], points[i2++], points[i2]);
-			tri.v0.load(p0);
-			tri.v1.load(p1);
-			tri.v2.load(p2);
-		}
 	}
 
 	public function toString() {
@@ -44,12 +28,12 @@ class MeshShape extends Shape {
 		if( tree != null )
 			return;
 		// Might be called from a thread, assign tree at the end
-		var triCount = triangles.length;
+		var triCount = Math.floor(indices.length / 3);
 		var t = new AABBTree(0.0, 2 * triCount);
 		var bounds = new StaticArray(AABB, triCount);
 		for( i in 0...triCount ) {
 			var aabb = bounds.pushEmpty();
-			triangles.get(i).getLocalBoundsToBuffer(aabb);
+			getTriangle(i).getLocalBoundsToBuffer(aabb);
 		}
 		t.build(bounds);
 		tree = t;
@@ -72,7 +56,21 @@ class MeshShape extends Shape {
 	}
 
 	public inline function getTriangle( triIndex : Int ) : TriangleShape {
-		return triangles.get(triIndex);
+		var i = triIndex * 3;
+		var i0 = indices[i++] * 3;
+		var v0 = new Vec3(points[i0++], points[i0++], points[i0]);
+		var i1 = indices[i++] * 3;
+		var v1 = new Vec3(points[i1++], points[i1++], points[i1]);
+		var i2 = indices[i] * 3;
+		var v2 = new Vec3(points[i2++], points[i2++], points[i2]);
+		return new TriangleShape(v0, v1, v2);
+	}
+
+	public inline function getTriangleToBuffer( triIndex : Int, out : TriangleShape ) {
+		var tri = getTriangle(triIndex);
+		out.v0.load(tri.v0);
+		out.v1.load(tri.v1);
+		out.v2.load(tri.v2);
 	}
 
 	public inline function isScaleValid( scale : Vec3 ) : Bool {
@@ -91,9 +89,9 @@ class MeshShape extends Shape {
 			tree.walkTree(visitor);
 			return;
 		}
-		var triCount = triangles.length;
+		var triCount = Math.floor(indices.length / 3);
 		for ( i in 0...triCount ) {
-			triangles.get(i).getLocalBoundsToBuffer(tmpNode.aabb);
+			getTriangle(i).getLocalBoundsToBuffer(tmpNode.aabb);
 			tmpNode.bodyID = i;
 			if ( !visitor.visitBody(tmpNode) )
 				break;

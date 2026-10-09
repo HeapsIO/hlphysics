@@ -9,11 +9,13 @@ class MeshCollideVisitor extends TreeVisitor {
 	var transformMesh : Mat;
 	var collector : CollideCollector;
 	var algo : ConvexVsConvexAlgorithm;
+	var tmpTri : TriangleShape;
 	@:packed var transformMeshToConvex : Mat;
 	@:packed var convexAABBInSpaceOfMesh : AABB;
 
 	public function new() {
 		this.algo = new ConvexVsConvexAlgorithm();
+		this.tmpTri = new TriangleShape(Vec3.zero(), Vec3.zero(), Vec3.zero());
 	}
 
 	public function init( convex : ConvexShape, mesh : MeshShape, scaleConvex : Vec3, scaleMesh : Vec3, transformConvex : Mat, transformMesh : Mat, collector : CollideCollector ) {
@@ -37,8 +39,8 @@ class MeshCollideVisitor extends TreeVisitor {
 	public function visitBody( node : TreeNode ) : Bool {
 		if( node.aabb.scaled(scaleMesh).collide(convexAABBInSpaceOfMesh) ) {
 			var id = node.bodyID;
-			var tri = @:privateAccess mesh.getTriangle(id);
-			algo.testCollision(convex, tri, scaleConvex, scaleMesh, transformConvex, transformMesh, collector);
+			@:privateAccess mesh.getTriangleToBuffer(id, tmpTri);
+			algo.testCollision(convex, tmpTri, scaleConvex, scaleMesh, transformConvex, transformMesh, collector);
 		}
 		return collector.curWantsMoreHits;
 	}
@@ -51,12 +53,14 @@ class MeshShapeCastVisitor extends TreeVisitor {
 	var transformMesh : Mat;
 	var collector : ShapeCastCollector;
 	var algo : ConvexVsConvexAlgorithm;
+	var tmpTri : TriangleShape;
 	@:packed var aabb : AABB;
 	@:packed var halfExtent : Vec3;
 	@:packed var ray : Ray;
 
 	public function new() {
 		this.algo = new ConvexVsConvexAlgorithm();
+		this.tmpTri = new TriangleShape(Vec3.zero(), Vec3.zero(), Vec3.zero());
 	}
 
 	public function init( convex : ShapeCast, mesh : MeshShape, scaleMesh : Vec3, transformMesh : Mat, collector : ShapeCastCollector ) {
@@ -86,8 +90,8 @@ class MeshShapeCastVisitor extends TreeVisitor {
 		enlargeAABB.enlargeWithExtent(halfExtent);
 		if( enlargeAABB.raycast(ray) < collector.curMaxFraction ) {
 			var id = node.bodyID;
-			var tri = @:privateAccess mesh.getTriangle(id);
-			algo.shapecast(convex, tri, scaleMesh, transformMesh, collector);
+			@:privateAccess mesh.getTriangleToBuffer(id, tmpTri);
+			algo.shapecast(convex, tmpTri, scaleMesh, transformMesh, collector);
 		}
 		return collector.curWantsMoreHits;
 	}

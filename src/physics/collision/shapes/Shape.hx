@@ -212,7 +212,10 @@ abstract class Shape {
 			var poly = @:privateAccess skin.transform;
 			position.set(0.0, 0.0, 0.0);
 			rotation.set(0.0, 0.0, 0.0);
-			return MeshShape.fromHeaps(poly);
+			// MeshShape reads the vertices in place but SkinCollider rewrites vertices at each animation frame
+			var snapshot = new h3d.col.PolygonBuffer();
+			@:privateAccess snapshot.setData(poly.buffer.copy(), poly.indexes, poly.startIndex, poly.triCount, poly.isConvex);
+			return MeshShape.fromHeaps(snapshot);
 		}
 		return null;
 	}
